@@ -1,0 +1,15 @@
+{
+  "name": "packing-list-backend",
+  "version": "1.0.0",
+  "description": "Backend proxy for packing list app",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
