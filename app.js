@@ -718,7 +718,7 @@ const PackingListApp = () => {
 
 // Render the app
 ReactDOM.render(React.createElement(PackingListApp), document.getElementById('root'));
-That's the complete app.js file!
+
 
 
 
