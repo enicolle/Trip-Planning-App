@@ -1,21 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+exports.handler = async (event, context) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
   try {
-    switch (req.method) {
+    switch (event.httpMethod) {
       case 'GET':
-        // Get all trips with their categories and items
         const { data: trips, error: tripsError } = await supabase
           .from('trips')
           .select(`
@@ -27,34 +30,38 @@ export default async function handler(req, res) {
           `);
         
         if (tripsError) throw tripsError;
-        return res.json({ data: trips, error: null });
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ data: trips, error: null })
+        };
 
       case 'POST':
-        // Create new trip
+        const tripData = JSON.parse(event.body);
         const { data: newTrip, error: insertError } = await supabase
           .from('trips')
-          .insert([req.body])
+          .insert([tripData])
           .select();
         
         if (insertError) throw insertError;
-        return res.json({ data: newTrip, error: null });
-
-      case 'DELETE':
-        // Delete trip
-        const { tripId } = req.query;
-        const { error: deleteError } = await supabase
-          .from('trips')
-          .delete()
-          .eq('id', tripId);
-        
-        if (deleteError) throw deleteError;
-        return res.json({ data: null, error: null });
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ data: newTrip, error: null })
+        };
 
       default:
-        res.status(405).json({ error: 'Method not allowed' });
+        return {
+          statusCode: 405,
+          headers,
+          body: JSON.stringify({ error: 'Method not allowed' })
+        };
     }
   } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({ error: error.message });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message })
+    };
   }
-}
+};
